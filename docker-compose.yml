@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  therapy-agent:
+    image: nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    command: bash -lc "python -m pip install --upgrade pip && pip install -e . && therapy-agent run /app/data/sample_frame.jpg --run-id local-demo"
+    environment:
+      - VLM_MODEL_ID=Qwen/Qwen2-VL-72B-Instruct
+      - LLM_MODEL_ID=meta-llama/Meta-Llama-3.1-70B-Instruct
+      - TENSOR_PARALLEL_SIZE=4
+      - DTYPE=float16
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 4
+              capabilities: [gpu]
