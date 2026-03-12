@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentic-therapy-ai"
+version = "0.1.0"
+description = "Production-oriented local Agentic AI pipeline for therapy pose description and Veo3 prompt synthesis"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "AgenticAI Team"}]
+dependencies = [
+  "pydantic>=2.8.2",
+  "pydantic-settings>=2.3.4",
+  "transformers>=4.44.2",
+  "accelerate>=0.33.0",
+  "torch>=2.2.0",
+  "Pillow>=10.4.0",
+  "vllm>=0.5.5",
+  "typer>=0.12.3",
+  "python-dotenv>=1.0.1",
+  "orjson>=3.10.7",
+  "tenacity>=9.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.2",
+  "pytest-cov>=5.0.0",
+  "ruff>=0.6.3",
+  "mypy>=1.11.2"
+]
+
+[project.scripts]
+therapy-agent = "agentic_therapy_ai.cli:app"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_unused_configs = true
