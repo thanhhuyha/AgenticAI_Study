@@ -4,6 +4,7 @@ from pathlib import Path
 
 import typer
 
+from .drc_finetune import DRCFineTuneConfig, build_or_load_dataset, train_drc_model
 from .drc_manual_compactor import DRCCompactionConfig, compact_manual
 from .drc_manual_compactor_v2 import DRCCompactionConfigV2, compact_manual_v2
 
@@ -50,6 +51,48 @@ def compact_drc_v2(
     typer.echo(f"Final tokens: {result['final_summary_tokens']} / target {result['target_tokens']}")
     typer.echo(f"Saved JSON: {output_path}")
     typer.echo(f"Saved Markdown: {output_markdown_path}")
+
+
+@app.command("prepare-finetune-data")
+def prepare_finetune_data(
+    model_path: str = typer.Option(..., help="Local pretrained Qwen3-30B path"),
+    md_dir: Path = typer.Option(..., exists=True, file_okay=False),
+    drc_dir: Path = typer.Option(..., exists=True, file_okay=False),
+    dataset_disk_path: Path = typer.Option(Path("outputs/drc_finetune_dataset")),
+) -> None:
+    """Build (or load cached) tokenized training dataset from .md and .drc files."""
+    cfg = DRCFineTuneConfig(
+        model_path=model_path,
+        md_dir=md_dir,
+        drc_dir=drc_dir,
+        dataset_disk_path=dataset_disk_path,
+    )
+    ds = build_or_load_dataset(cfg)
+    typer.echo(f"Dataset ready at: {dataset_disk_path}")
+    typer.echo(f"Samples: {len(ds)}")
+
+
+@app.command("finetune")
+def finetune(
+    model_path: str = typer.Option(..., help="Local pretrained Qwen3-30B path"),
+    md_dir: Path = typer.Option(..., exists=True, file_okay=False),
+    drc_dir: Path = typer.Option(..., exists=True, file_okay=False),
+    dataset_disk_path: Path = typer.Option(Path("outputs/drc_finetune_dataset")),
+    output_dir: Path = typer.Option(Path("outputs/drc_finetune_runs")),
+    tune_mode: str = typer.Option("lora", help="Choose 'lora' or 'full'"),
+) -> None:
+    """Fine-tune local Qwen3-30B using Accelerate/FSDP launcher configuration."""
+    use_lora = tune_mode.lower() == "lora"
+    cfg = DRCFineTuneConfig(
+        model_path=model_path,
+        md_dir=md_dir,
+        drc_dir=drc_dir,
+        dataset_disk_path=dataset_disk_path,
+        output_dir=output_dir,
+        use_lora=use_lora,
+    )
+    train_drc_model(cfg)
+    typer.echo(f"Training complete. Artifacts: {output_dir}")
 
 
 if __name__ == "__main__":
