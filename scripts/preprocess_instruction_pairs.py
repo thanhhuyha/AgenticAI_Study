@@ -53,7 +53,7 @@ def _extract_pair(raw_text: str) -> tuple[str, str]:
 def _format_instruction_sample(question: str, answer: str) -> str:
     return (
         "<|im_start|>system\n"
-        "You are a helpful assistant for DRC and EDA tasks.\n"
+        "You are a helpful assistant for AAA and EDA tasks.\n"
         "<|im_end|>\n"
         "<|im_start|>user\n"
         f"{question}\n"

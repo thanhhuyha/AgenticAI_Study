@@ -9,12 +9,12 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-SUMMARY_SYSTEM_PROMPT = """You are an expert DRC engineer. Extract only high-value information from manual pages.
-Return concise, implementation-ready notes for writing and debugging DRC rules.
+SUMMARY_SYSTEM_PROMPT = """You are an expert AAA engineer. Extract only high-value information from manual pages.
+Return concise, implementation-ready notes for writing and debugging AAA rules.
 Focus on syntax, semantics, rule parameters, edge cases, precedence, defaults, and examples.
 Skip marketing and repeated prose."""
 
-CHUNK_TEMPLATE = """Summarize this DRC manual page.
+CHUNK_TEMPLATE = """Summarize this AAA manual page.
 
 Page path: {page_path}
 
@@ -30,7 +30,7 @@ Output JSON with keys:
 - unresolved_questions: list[str]
 """
 
-FINAL_TEMPLATE = """You are given extracted notes from many DRC manual pages.
+FINAL_TEMPLATE = """You are given extracted notes from many AAA manual pages.
 Merge and deduplicate into a compact reference for LLM prompting.
 Target <= {target_chars} characters.
 
@@ -38,7 +38,7 @@ Notes JSON:
 {notes_json}
 
 Output JSON with keys:
-- drc_cheat_sheet: string
+- aaa_cheat_sheet: string
 - prompt_context_for_code_gen: string
 - prompt_context_for_debugging: string
 - dropped_or_ambiguous_items: list[str]
@@ -46,10 +46,10 @@ Output JSON with keys:
 
 
 @dataclass
-class DRCCompactionConfig:
+class AAACompactionConfig:
     model_path: str
     md_dir: Path
-    output_path: Path = Path("outputs/drc_compacted_context.json")
+    output_path: Path = Path("outputs/aaa_compacted_context.json")
     max_input_chars_per_page: int = 6000
     max_new_tokens_chunk: int = 500
     max_new_tokens_final: int = 1200
@@ -99,7 +99,7 @@ def iter_markdown_files(md_dir: Path) -> Iterable[Path]:
     yield from sorted(md_dir.rglob("*.md"))
 
 
-def compact_manual(config: DRCCompactionConfig) -> dict:
+def compact_manual(config: AAACompactionConfig) -> dict:
     compactor = LocalQwenCompactor(model_path=config.model_path)
 
     pages = list(iter_markdown_files(config.md_dir))

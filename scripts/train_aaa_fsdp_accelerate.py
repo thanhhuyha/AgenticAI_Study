@@ -10,16 +10,16 @@ from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer, default_data_collator
 
-from agentic_therapy_ai.drc_finetune import DRCFineTuneConfig, build_or_load_dataset
+from agentic_therapy_ai.aaa_finetune import AAAFineTuneConfig, build_or_load_dataset
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="FSDP training with accelerate.save_state checkpoints.")
     parser.add_argument("--model-path", type=str, required=True)
     parser.add_argument("--md-dir", type=Path, required=True)
-    parser.add_argument("--drc-dir", type=Path, required=True)
-    parser.add_argument("--dataset-disk-path", type=Path, default=Path("outputs/drc_finetune_dataset"))
-    parser.add_argument("--output-dir", type=Path, default=Path("outputs/drc_finetune_runs"))
+    parser.add_argument("--aaa-dir", type=Path, required=True)
+    parser.add_argument("--dataset-disk-path", type=Path, default=Path("outputs/aaa_finetune_dataset"))
+    parser.add_argument("--output-dir", type=Path, default=Path("outputs/aaa_finetune_runs"))
     parser.add_argument("--tune-mode", type=str, default="lora", choices=["lora", "full"])
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--save-every-epochs", type=int, default=5)
@@ -28,17 +28,17 @@ def main() -> None:
     parser.add_argument("--lr", type=float, default=2e-5)
     args = parser.parse_args()
 
-    cfg = DRCFineTuneConfig(
+    cfg = AAAFineTuneConfig(
         model_path=args.model_path,
         md_dir=args.md_dir,
-        drc_dir=args.drc_dir,
+        aaa_dir=args.aaa_dir,
         dataset_disk_path=args.dataset_disk_path,
         output_dir=args.output_dir,
         use_lora=args.tune_mode == "lora",
     )
 
     accelerator = Accelerator(log_with="tensorboard", project_dir=str(cfg.output_dir / "tb_logs"))
-    accelerator.init_trackers("drc_qwen3_finetune")
+    accelerator.init_trackers("aaa_qwen3_finetune")
 
     dataset = build_or_load_dataset(cfg)
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=default_data_collator)

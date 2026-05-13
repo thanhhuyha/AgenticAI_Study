@@ -16,12 +16,12 @@ from transformers import (
 
 
 @dataclass
-class DRCFineTuneConfig:
+class AAAFineTuneConfig:
     model_path: str
     md_dir: Path
-    drc_dir: Path
-    dataset_disk_path: Path = Path("outputs/drc_finetune_dataset")
-    output_dir: Path = Path("outputs/drc_finetune_runs")
+    aaa_dir: Path
+    dataset_disk_path: Path = Path("outputs/aaa_finetune_dataset")
+    output_dir: Path = Path("outputs/aaa_finetune_runs")
     max_length: int = 512
     per_device_train_batch_size: int = 1
     gradient_accumulation_steps: int = 8
@@ -44,7 +44,7 @@ def _chunk_ids(ids: list[int], size: int) -> list[list[int]]:
     return [ids[i : i + size] for i in range(0, len(ids), size) if ids[i : i + size]]
 
 
-def build_or_load_dataset(cfg: DRCFineTuneConfig) -> Dataset:
+def build_or_load_dataset(cfg: AAAFineTuneConfig) -> Dataset:
     if cfg.dataset_disk_path.exists():
         return load_from_disk(str(cfg.dataset_disk_path))
 
@@ -62,8 +62,8 @@ def build_or_load_dataset(cfg: DRCFineTuneConfig) -> Dataset:
             chunk = chunk + [tokenizer.pad_token_id] * (cfg.max_length - len(chunk))
         samples.append(chunk)
 
-    drc_files = _iter_files(cfg.drc_dir, ".drc")
-    for path in drc_files:
+    aaa_files = _iter_files(cfg.aaa_dir, ".aaa")
+    for path in aaa_files:
         text = path.read_text(encoding="utf-8", errors="ignore")
         ids = tokenizer(text, add_special_tokens=False, truncation=True, max_length=cfg.max_length)["input_ids"]
         if len(ids) < cfg.max_length:
@@ -78,14 +78,14 @@ def build_or_load_dataset(cfg: DRCFineTuneConfig) -> Dataset:
     meta = {
         "num_samples": len(ds),
         "num_md_files": len(md_files),
-        "num_drc_files": len(drc_files),
+        "num_aaa_files": len(aaa_files),
         "config": asdict(cfg),
     }
     (cfg.dataset_disk_path / "metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
     return ds
 
 
-def train_drc_model(cfg: DRCFineTuneConfig) -> None:
+def train_aaa_model(cfg: AAAFineTuneConfig) -> None:
     dataset = build_or_load_dataset(cfg)
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_path, local_files_only=True)
     if tokenizer.pad_token is None:

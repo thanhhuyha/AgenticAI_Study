@@ -4,22 +4,22 @@ from pathlib import Path
 
 import typer
 
-from .drc_finetune import DRCFineTuneConfig, build_or_load_dataset, train_drc_model
-from .drc_manual_compactor import DRCCompactionConfig, compact_manual
-from .drc_manual_compactor_v2 import DRCCompactionConfigV2, compact_manual_v2
+from .aaa_finetune import AAAFineTuneConfig, build_or_load_dataset, train_aaa_model
+from .aaa_manual_compactor import AAACompactionConfig, compact_manual
+from .aaa_manual_compactor_v2 import AAACompactionConfigV2, compact_manual_v2
 
-app = typer.Typer(help="DRC-only CLI for manual compaction workflows.")
+app = typer.Typer(help="AAA-only CLI for manual compaction workflows.")
 
 
-@app.command("compact-drc")
-def compact_drc(
+@app.command("compact-aaa")
+def compact_aaa(
     model_path: str = typer.Option(..., help="Local path to Qwen3-30B model directory"),
     md_dir: Path = typer.Option(..., exists=True, file_okay=False, readable=True),
-    output_path: Path = typer.Option(Path("outputs/drc_compacted_context.json")),
+    output_path: Path = typer.Option(Path("outputs/aaa_compacted_context.json")),
     max_pages: int = typer.Option(2000, min=1),
 ) -> None:
-    """Compact many DRC markdown pages into prompt-sized context."""
-    cfg = DRCCompactionConfig(
+    """Compact many AAA markdown pages into prompt-sized context."""
+    cfg = AAACompactionConfig(
         model_path=model_path,
         md_dir=md_dir,
         output_path=output_path,
@@ -30,16 +30,16 @@ def compact_drc(
     typer.echo(f"Saved: {output_path}")
 
 
-@app.command("compact-drc-v2")
-def compact_drc_v2(
+@app.command("compact-aaa-v2")
+def compact_aaa_v2(
     model_path: str = typer.Option(..., help="Local path to Qwen3-30B model directory"),
     md_dir: Path = typer.Option(..., exists=True, file_okay=False, readable=True),
-    output_path: Path = typer.Option(Path("outputs/drc_compacted_context_v2.json")),
-    output_markdown_path: Path = typer.Option(Path("outputs/drc_compacted_context_v2.md")),
+    output_path: Path = typer.Option(Path("outputs/aaa_compacted_context_v2.json")),
+    output_markdown_path: Path = typer.Option(Path("outputs/aaa_compacted_context_v2.md")),
     max_files: int = typer.Option(2000, min=1),
 ) -> None:
     """Iterative V2 compaction using previous summary + current markdown file."""
-    cfg = DRCCompactionConfigV2(
+    cfg = AAACompactionConfigV2(
         model_path=model_path,
         md_dir=md_dir,
         output_path=output_path,
@@ -57,14 +57,14 @@ def compact_drc_v2(
 def prepare_finetune_data(
     model_path: str = typer.Option(..., help="Local pretrained Qwen3-30B path"),
     md_dir: Path = typer.Option(..., exists=True, file_okay=False),
-    drc_dir: Path = typer.Option(..., exists=True, file_okay=False),
-    dataset_disk_path: Path = typer.Option(Path("outputs/drc_finetune_dataset")),
+    aaa_dir: Path = typer.Option(..., exists=True, file_okay=False),
+    dataset_disk_path: Path = typer.Option(Path("outputs/aaa_finetune_dataset")),
 ) -> None:
-    """Build (or load cached) tokenized training dataset from .md and .drc files."""
-    cfg = DRCFineTuneConfig(
+    """Build (or load cached) tokenized training dataset from .md and .aaa files."""
+    cfg = AAAFineTuneConfig(
         model_path=model_path,
         md_dir=md_dir,
-        drc_dir=drc_dir,
+        aaa_dir=aaa_dir,
         dataset_disk_path=dataset_disk_path,
     )
     ds = build_or_load_dataset(cfg)
@@ -76,22 +76,22 @@ def prepare_finetune_data(
 def finetune(
     model_path: str = typer.Option(..., help="Local pretrained Qwen3-30B path"),
     md_dir: Path = typer.Option(..., exists=True, file_okay=False),
-    drc_dir: Path = typer.Option(..., exists=True, file_okay=False),
-    dataset_disk_path: Path = typer.Option(Path("outputs/drc_finetune_dataset")),
-    output_dir: Path = typer.Option(Path("outputs/drc_finetune_runs")),
+    aaa_dir: Path = typer.Option(..., exists=True, file_okay=False),
+    dataset_disk_path: Path = typer.Option(Path("outputs/aaa_finetune_dataset")),
+    output_dir: Path = typer.Option(Path("outputs/aaa_finetune_runs")),
     tune_mode: str = typer.Option("lora", help="Choose 'lora' or 'full'"),
 ) -> None:
     """Fine-tune local Qwen3-30B using Accelerate/FSDP launcher configuration."""
     use_lora = tune_mode.lower() == "lora"
-    cfg = DRCFineTuneConfig(
+    cfg = AAAFineTuneConfig(
         model_path=model_path,
         md_dir=md_dir,
-        drc_dir=drc_dir,
+        aaa_dir=aaa_dir,
         dataset_disk_path=dataset_disk_path,
         output_dir=output_dir,
         use_lora=use_lora,
     )
-    train_drc_model(cfg)
+    train_aaa_model(cfg)
     typer.echo(f"Training complete. Artifacts: {output_dir}")
 
 

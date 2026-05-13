@@ -9,7 +9,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # Hardcoded config
 MODEL_PATH = "/path/to/local/Qwen3-30B"
-MD_DIR = Path("/path/to/drc_manual_md")
+MD_DIR = Path("/path/to/aaa_manual_md")
 OUTPUT_DIR = Path("outputs/generated_instruction_qa")
 N_TOTAL_PAIRS = 200
 PAIRS_PER_INFERENCE = 5
@@ -19,13 +19,13 @@ TEMPERATURE = 0.7
 TOP_P = 0.9
 
 
-SYSTEM_PROMPT = """You are a DRC instruction-data generator.
+SYSTEM_PROMPT = """You are a AAA instruction-data generator.
 CRITICAL RULE: Use ONLY information from the provided manual excerpts.
 If a concept is not present in the excerpts, do not invent it.
-Generate realistic DRC-focused instruction Q/A pairs for fine-tuning.
+Generate realistic AAA-focused instruction Q/A pairs for fine-tuning.
 Question categories should include:
-1) Debug a DRC snippet
-2) Write a DRC snippet for a design-rule objective
+1) Debug a AAA snippet
+2) Write a AAA snippet for a design-rule objective
 3) Syntax checking/correction
 4) Command usage explanation
 Difficulty should vary from medium to complex.

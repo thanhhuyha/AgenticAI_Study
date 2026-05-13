@@ -9,13 +9,13 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-SYSTEM_PROMPT_V2 = """You are a principal DRC engineer and technical summarizer.
-Your output will be consumed by another Qwen3-30B model for DRC code writing/debugging.
+SYSTEM_PROMPT_V2 = """You are a principal AAA engineer and technical summarizer.
+Your output will be consumed by another Qwen3-30B model for AAA code writing/debugging.
 Preserve only high-signal knowledge: syntax, APIs, rule semantics, constraints, precedence, defaults, examples, pitfalls, and debugging cues.
 Avoid repetition, prose, and irrelevant content.
 """
 
-ITER_TEMPLATE = """You are processing a DRC manual incrementally.
+ITER_TEMPLATE = """You are processing a AAA manual incrementally.
 
 Existing cumulative summary (covers all previous pages):
 {previous_summary}
@@ -28,7 +28,7 @@ Content:
 Task:
 Fuse the new content into the cumulative summary and return an updated summary.
 Requirements:
-- Keep all critical DRC knowledge needed for code writing/debugging.
+- Keep all critical AAA knowledge needed for code writing/debugging.
 - Deduplicate aggressively.
 - Keep concise and structured.
 - If previous summary has errors/ambiguities, correct them.
@@ -43,11 +43,11 @@ Return JSON:
 
 
 @dataclass
-class DRCCompactionConfigV2:
+class AAACompactionConfigV2:
     model_path: str
     md_dir: Path
-    output_path: Path = Path("outputs/drc_compacted_context_v2.json")
-    output_markdown_path: Path = Path("outputs/drc_compacted_context_v2.md")
+    output_path: Path = Path("outputs/aaa_compacted_context_v2.json")
+    output_markdown_path: Path = Path("outputs/aaa_compacted_context_v2.md")
     max_input_chars_per_file: int = 12000
     max_new_tokens_per_iter: int = 1400
     temperature: float = 0.1
@@ -70,7 +70,7 @@ class LocalQwenCompactorV2:
     def count_tokens(self, text: str) -> int:
         return len(self.tokenizer.encode(text, add_special_tokens=False))
 
-    def generate(self, system_prompt: str, user_prompt: str, cfg: DRCCompactionConfigV2) -> str:
+    def generate(self, system_prompt: str, user_prompt: str, cfg: AAACompactionConfigV2) -> str:
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
@@ -105,7 +105,7 @@ def _extract_updated_summary(raw_response: str) -> str:
     return raw_response.strip()
 
 
-def compact_manual_v2(config: DRCCompactionConfigV2) -> dict:
+def compact_manual_v2(config: AAACompactionConfigV2) -> dict:
     compactor = LocalQwenCompactorV2(model_path=config.model_path)
     files = list(iter_markdown_files(config.md_dir))
     if config.max_files is not None:
@@ -155,7 +155,7 @@ def compact_manual_v2(config: DRCCompactionConfigV2) -> dict:
     config.output_markdown_path.parent.mkdir(parents=True, exist_ok=True)
     config.output_markdown_path.write_text(
         (
-            "# DRC Manual Iterative Compaction (V2)\n\n"
+            "# AAA Manual Iterative Compaction (V2)\n\n"
             f"- Files processed: **{result['files_processed']}**\n"
             f"- Target tokens (50% window): **{target_tokens}**\n"
             f"- Final summary tokens: **{final_tokens}**\n"
